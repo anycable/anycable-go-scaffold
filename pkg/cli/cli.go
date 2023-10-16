@@ -7,7 +7,7 @@ import (
 	aconfig "github.com/anycable/anycable-go/config"
 	"github.com/anycable/anycable-go/metrics"
 	"github.com/anycable/anycable-go/node"
-	"github.com/anycable/anycable-go/pubsub"
+	"github.com/anycable/anycable-go/server"
 	"github.com/anycable/anycable-go/ws"
 	"github.com/apex/log"
 	"github.com/gorilla/websocket"
@@ -30,20 +30,13 @@ func Run(conf *config.Config, anyconf *aconfig.Config) error {
 	return anycable.Run()
 }
 
-// NoopSubscriber is used to stub AnyCable pub/sub functionality
-type NoopSubscriber struct{}
-
-var _ pubsub.Subscriber = (*NoopSubscriber)(nil)
-
-func (NoopSubscriber) Start(done chan error) (err error) { return }
-func (NoopSubscriber) Shutdown() (err error)             { return }
-
 func initAnyCableRunner(appConf *config.Config, anyConf *aconfig.Config) (*acli.Runner, error) {
 	opts := []acli.Option{
 		acli.WithName("AnyCable"),
-		acli.WithSubscriber(func(h pubsub.Handler, c *aconfig.Config) (pubsub.Subscriber, error) {
-			return &NoopSubscriber{}, nil
-		}),
+		acli.WithDefaultSubscriber(),
+		acli.WithDefaultBroker(),
+		// Enable broadcasting
+		// acli.WithDefaultBroadcaster(),
 		acli.WithWebSocketEndpoint("/ws", myWebsocketHandler(appConf)),
 	}
 
@@ -60,17 +53,18 @@ func initAnyCableRunner(appConf *config.Config, anyConf *aconfig.Config) (*acli.
 
 func myWebsocketHandler(config *config.Config) func(n *node.Node, c *aconfig.Config) (http.Handler, error) {
 	return func(n *node.Node, c *aconfig.Config) (http.Handler, error) {
-		extractor := ws.DefaultHeadersExtractor{Headers: c.Headers, Cookies: c.Cookies}
+		extractor := server.DefaultHeadersExtractor{Headers: c.Headers, Cookies: c.Cookies}
 
 		executor := custom.NewExecutor(n)
 
 		log.WithField("context", "main").Infof("Handle custom WebSocket connections at ws://%s:%d/ws", c.Host, c.Port)
 
-		return ws.WebsocketHandler([]string{}, &extractor, &c.WS, func(wsc *websocket.Conn, info *ws.RequestInfo, callback func()) error {
+		return ws.WebsocketHandler([]string{}, &extractor, &c.WS, func(wsc *websocket.Conn, info *server.RequestInfo, callback func()) error {
 			wrappedConn := ws.NewConnection(wsc)
-			session := node.NewSession(n, wrappedConn, info.URL, info.Headers, info.UID)
-			session.SetEncoder(custom.Encoder{})
-			session.SetExecutor(executor)
+			session := node.NewSession(
+				n, wrappedConn, info.URL, info.Headers, info.UID,
+				node.WithEncoder(custom.Encoder{}), node.WithExecutor(executor),
+			)
 
 			_, err := n.Authenticate(session)
 

@@ -35,6 +35,8 @@ func (c *Controller) Shutdown() error {
 }
 
 func (c *Controller) Authenticate(sid string, env *common.SessionEnv) (*common.ConnectResult, error) {
+	c.log.WithField("sid", sid).Debug("> Connected")
+
 	return &common.ConnectResult{
 		Status:        common.SUCCESS,
 		Identifier:    sid,
@@ -43,6 +45,8 @@ func (c *Controller) Authenticate(sid string, env *common.SessionEnv) (*common.C
 }
 
 func (c *Controller) Subscribe(sid string, env *common.SessionEnv, identifiers string, channel string) (*common.CommandResult, error) {
+	c.log.WithField("sid", sid).Debugf("> Subscribed to %s", channel)
+
 	res := &common.CommandResult{
 		Status:        common.SUCCESS,
 		Transmissions: []string{cableMessage("confirm_subscription", channel)},
@@ -51,6 +55,8 @@ func (c *Controller) Subscribe(sid string, env *common.SessionEnv, identifiers s
 }
 
 func (c *Controller) Unsubscribe(sid string, env *common.SessionEnv, identifiers string, channel string) (*common.CommandResult, error) {
+	c.log.WithField("sid", sid).Debugf("> Unubscribed from %s", channel)
+
 	res := &common.CommandResult{
 		Status: common.SUCCESS,
 	}
@@ -66,7 +72,7 @@ func (c *Controller) Perform(sid string, env *common.SessionEnv, id string, chan
 
 	action := payload["action"].(string)
 
-	c.log.Debugf("Perform action: %s, data: %v", action, payload)
+	c.log.WithField("sid", sid).Debugf("> Perform action: %s, data: %v", action, payload)
 
 	nextState := make(map[string]string)
 
@@ -83,6 +89,8 @@ func (c *Controller) Perform(sid string, env *common.SessionEnv, id string, chan
 }
 
 func (c *Controller) Disconnect(sid string, env *common.SessionEnv, id string, subscriptions []string) error {
+	c.log.WithField("sid", sid).Debug("> Disconnected")
+
 	return nil
 }
 

@@ -10,7 +10,7 @@ Why building a WebSocket application with AnyCable-Go (and not other Go librarie
 
 Read more about [AnyCable-Go][anycable-docs].
 
-### Examples
+## Examples
 
 - [AnyCable + Twilio Streams](https://github.com/anycable/anycable-twilio-hanami-demo)
 
@@ -28,7 +28,7 @@ Make sure everything is ready by running `make lint` and `make test`.
 
 ## Development
 
-**NOTE:** Make sure Go 1.19+ installed.
+**NOTE:** Make sure Go 1.20+ installed.
 
 The following commands are available:
 
