@@ -1,14 +1,14 @@
 # AnyCable Go scaffold
 
-This is a template repository containing a scaffolding code to build real-time Go applications on top of [AnyCable-Go][anycable-go].
+This is a template repository containing a scaffolding code to build real-time Go applications on top of [AnyCable][anycable-go].
 
-Why building a WebSocket application with AnyCable-Go (and not other Go libraries)?
+Why building a WebSocket application with AnyCable (and not other Go libraries)?
 
-- Connect your application to Ruby/Rails apps with ease by using AnyCable RPC protocol.
+- Connect your application to Ruby/Rails/JS/whatever apps with ease by using AnyCable RPC protocol.
 - Many features out-of-the-box including different pub/sub adapters (including [embedded NATS][enats]), built-in instrumentation.
 - Bulletproof code, which has been used production for years.
 
-Read more about [AnyCable-Go][anycable-docs].
+Read more about [AnyCable][anycable-docs].
 
 ## Examples
 
@@ -28,7 +28,7 @@ Make sure everything is ready by running `make lint` and `make test`.
 
 ## Development
 
-**NOTE:** Make sure Go 1.20+ installed.
+**NOTE:** Make sure Go 1.21+ installed.
 
 The following commands are available:
 

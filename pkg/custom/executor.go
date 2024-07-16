@@ -22,7 +22,7 @@ func (ex *Executor) HandleCommand(s *node.Session, msg *common.Message) (err err
 	// Implement custom commands handling,
 	// or delegate to node
 
-	s.Log.Debugf("Incoming message: %v", msg)
+	s.Log.Debug("incoming message", "msg", msg)
 	switch msg.Command {
 	case "subscribe":
 		_, err = ex.node.Subscribe(s, msg)
@@ -31,7 +31,7 @@ func (ex *Executor) HandleCommand(s *node.Session, msg *common.Message) (err err
 	case "message":
 		_, err = ex.node.Perform(s, msg)
 	default:
-		err = fmt.Errorf("Unknown command: %s", msg.Command)
+		err = fmt.Errorf("unknown command: %s", msg.Command)
 	}
 
 	return

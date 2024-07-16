@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+	"log/slog"
 	"net/http"
 
 	acli "github.com/anycable/anycable-go/cli"
@@ -9,7 +11,6 @@ import (
 	"github.com/anycable/anycable-go/node"
 	"github.com/anycable/anycable-go/server"
 	"github.com/anycable/anycable-go/ws"
-	"github.com/apex/log"
 	"github.com/gorilla/websocket"
 
 	"github.com/anycable/mycable/internal/fake_rpc"
@@ -19,20 +20,24 @@ import (
 )
 
 func Run(conf *config.Config, anyconf *aconfig.Config) error {
-	anycable, err := initAnyCableRunner(conf, anyconf)
+	// Configure your logger here
+	logger := slog.Default()
+
+	anycable, err := initAnyCableRunner(conf, anyconf, logger)
 
 	if err != nil {
 		return err
 	}
 
-	log.WithField("context", "main").Infof("Starting custom AnyCable v%s", version.Version())
+	logger.Info(fmt.Sprintf("Starting custom AnyCable v%s", version.Version()))
 
 	return anycable.Run()
 }
 
-func initAnyCableRunner(appConf *config.Config, anyConf *aconfig.Config) (*acli.Runner, error) {
+func initAnyCableRunner(appConf *config.Config, anyConf *aconfig.Config, l *slog.Logger) (*acli.Runner, error) {
 	opts := []acli.Option{
 		acli.WithName("AnyCable"),
+		acli.WithLogger(l),
 		acli.WithDefaultSubscriber(),
 		acli.WithDefaultBroker(),
 		// Enable broadcasting
@@ -41,8 +46,8 @@ func initAnyCableRunner(appConf *config.Config, anyConf *aconfig.Config) (*acli.
 	}
 
 	if appConf.FakeRPC {
-		opts = append(opts, acli.WithController(func(m *metrics.Metrics, c *aconfig.Config) (node.Controller, error) {
-			return fake_rpc.NewController(), nil
+		opts = append(opts, acli.WithController(func(m *metrics.Metrics, c *aconfig.Config, lg *slog.Logger) (node.Controller, error) {
+			return fake_rpc.NewController(lg), nil
 		}))
 	} else {
 		opts = append(opts, acli.WithDefaultRPCController())
@@ -51,15 +56,15 @@ func initAnyCableRunner(appConf *config.Config, anyConf *aconfig.Config) (*acli.
 	return acli.NewRunner(anyConf, opts)
 }
 
-func myWebsocketHandler(config *config.Config) func(n *node.Node, c *aconfig.Config) (http.Handler, error) {
-	return func(n *node.Node, c *aconfig.Config) (http.Handler, error) {
+func myWebsocketHandler(config *config.Config) func(n *node.Node, c *aconfig.Config, lg *slog.Logger) (http.Handler, error) {
+	return func(n *node.Node, c *aconfig.Config, lg *slog.Logger) (http.Handler, error) {
 		extractor := server.DefaultHeadersExtractor{Headers: c.Headers, Cookies: c.Cookies}
 
 		executor := custom.NewExecutor(n)
 
-		log.WithField("context", "main").Infof("Handle custom WebSocket connections at ws://%s:%d/ws", c.Host, c.Port)
+		lg.Info(fmt.Sprintf("Handle custom WebSocket connections at ws://%s:%d/ws", c.Host, c.Port))
 
-		return ws.WebsocketHandler([]string{}, &extractor, &c.WS, func(wsc *websocket.Conn, info *server.RequestInfo, callback func()) error {
+		return ws.WebsocketHandler([]string{}, &extractor, &c.WS, lg, func(wsc *websocket.Conn, info *server.RequestInfo, callback func()) error {
 			wrappedConn := ws.NewConnection(wsc)
 			session := node.NewSession(
 				n, wrappedConn, info.URL, info.Headers, info.UID,

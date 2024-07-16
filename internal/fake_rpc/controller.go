@@ -2,11 +2,11 @@ package fake_rpc
 
 import (
 	"encoding/json"
+	"log/slog"
 
 	"github.com/anycable/anycable-go/common"
 	"github.com/anycable/anycable-go/node"
 	"github.com/anycable/anycable-go/utils"
-	"github.com/apex/log"
 )
 
 const (
@@ -14,18 +14,18 @@ const (
 )
 
 type Controller struct {
-	log *log.Entry
+	log *slog.Logger
 }
 
 var _ node.Controller = (*Controller)(nil)
 
-func NewController() *Controller {
-	return &Controller{log: log.WithField("context", "fake_rpc")}
+func NewController(l *slog.Logger) *Controller {
+	return &Controller{log: l.With("context", "fake_rpc")}
 }
 
 // Start is no-op
 func (c *Controller) Start() error {
-	c.log.Warnf("Using fake RPC controller")
+	c.log.Warn("Using fake RPC controller")
 	return nil
 }
 
@@ -35,7 +35,7 @@ func (c *Controller) Shutdown() error {
 }
 
 func (c *Controller) Authenticate(sid string, env *common.SessionEnv) (*common.ConnectResult, error) {
-	c.log.WithField("sid", sid).Debug("> Connected")
+	c.log.With("sid", sid).Debug("> Connected")
 
 	return &common.ConnectResult{
 		Status:        common.SUCCESS,
@@ -45,7 +45,7 @@ func (c *Controller) Authenticate(sid string, env *common.SessionEnv) (*common.C
 }
 
 func (c *Controller) Subscribe(sid string, env *common.SessionEnv, identifiers string, channel string) (*common.CommandResult, error) {
-	c.log.WithField("sid", sid).Debugf("> Subscribed to %s", channel)
+	c.log.With("sid", sid).Debug("> Subscribed", "channel", channel)
 
 	res := &common.CommandResult{
 		Status:        common.SUCCESS,
@@ -55,7 +55,7 @@ func (c *Controller) Subscribe(sid string, env *common.SessionEnv, identifiers s
 }
 
 func (c *Controller) Unsubscribe(sid string, env *common.SessionEnv, identifiers string, channel string) (*common.CommandResult, error) {
-	c.log.WithField("sid", sid).Debugf("> Unubscribed from %s", channel)
+	c.log.With("sid", sid).Debug("> Unubscribed", "channel", channel)
 
 	res := &common.CommandResult{
 		Status: common.SUCCESS,
@@ -72,7 +72,7 @@ func (c *Controller) Perform(sid string, env *common.SessionEnv, id string, chan
 
 	action := payload["action"].(string)
 
-	c.log.WithField("sid", sid).Debugf("> Perform action: %s, data: %v", action, payload)
+	c.log.With("sid", sid).Debug("> Performed action", "action", action, "payload", data)
 
 	nextState := make(map[string]string)
 
@@ -89,7 +89,7 @@ func (c *Controller) Perform(sid string, env *common.SessionEnv, id string, chan
 }
 
 func (c *Controller) Disconnect(sid string, env *common.SessionEnv, id string, subscriptions []string) error {
-	c.log.WithField("sid", sid).Debug("> Disconnected")
+	c.log.With("sid", sid).Debug("> Disconnected")
 
 	return nil
 }

@@ -9,8 +9,6 @@ import (
 	"github.com/anycable/mycable/pkg/config"
 	"github.com/anycable/mycable/pkg/version"
 
-	"github.com/apex/log"
-
 	_ "github.com/anycable/anycable-go/diagnostics"
 )
 
@@ -20,13 +18,13 @@ func main() {
 	anyconf, err, ok := acli.NewConfigFromCLI(
 		os.Args,
 		acli.WithCLIName("mycable"),
-		acli.WithCLIUsageHeader("MyCable, the custom AnyCable-Go build"),
+		acli.WithCLIUsageHeader("MyCable, a custom AnyCable build"),
 		acli.WithCLIVersion(version.Version()),
 		acli.WithCLICustomOptions(cli.CustomOptions(conf)),
 	)
 
 	if err != nil {
-		log.Fatalf("%v", err)
+		panic(err)
 	}
 
 	if ok {
