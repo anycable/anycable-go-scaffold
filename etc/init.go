@@ -54,6 +54,8 @@ func main() {
 
 	// Replace in Makefile
 	replaceInFile("Makefile", "PROJECT=anycable/mycable", "PROJECT="+project)
+	replaceInFile("Makefile", "BIN_NAME=mycable", "BIN_NAME="+binName)
+	replaceInFile("Makefile", "OUTPUT ?= dist/mycable", "OUTPUT ?= dist/"+binName)
 
 	// Rename cmd directory
 	err = os.Rename("cmd/mycable", "cmd/"+binName)
