@@ -47,3 +47,6 @@ lint: bin/golangci-lint
 
 fmt:
 	go fmt ./...
+
+init:
+	go run etc/init.go

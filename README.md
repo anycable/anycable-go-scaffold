@@ -22,13 +22,17 @@ Clone this repository:
 git clone --depth 1 https://github.com/anycable/anycable-go-scaffold my-cable-project
 ```
 
-Rename the project from `anycable/mycable` to `<org>/<project>` (`go.mod`, `*.go` files, etc.).
+Run the following command to set up the project:
 
-Make sure everything is ready by running `make lint` and `make test`.
+```sh
+make init
+```
+
+It would rename the project from `anycable/mycable` to whatever name you want (`<org>/<project>`) updating the `go.mod`, `*.go` files, etc.
 
 ## Development
 
-**NOTE:** Make sure Go 1.21+ installed.
+**NOTE:** Make sure Go 1.23+ installed.
 
 The following commands are available:
 
