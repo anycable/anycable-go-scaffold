@@ -40,8 +40,7 @@ func initAnyCableRunner(appConf *config.Config, anyConf *aconfig.Config, l *slog
 		acli.WithLogger(l),
 		acli.WithDefaultSubscriber(),
 		acli.WithDefaultBroker(),
-		// Enable broadcasting
-		// acli.WithDefaultBroadcaster(),
+		acli.WithDefaultBroadcaster(),
 		acli.WithWebSocketEndpoint("/ws", myWebsocketHandler(appConf)),
 	}
 
